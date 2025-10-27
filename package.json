@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "build": "npx tailwindcss -i ./public/tw.css -o ./public/assets/tw.css --minify",
+    "build": "npm run build:css",
+    "build:css": "npx @tailwindcss/cli -i ./public/tw.css -o ./public/assets/tw.css --minify",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",
+    "@tailwindcss/cli": "^4.1.16",
     "eslint": "^9.38.0",
     "eslint-plugin-node": "^11.1.0",
     "tailwindcss": "^4.1.16"
