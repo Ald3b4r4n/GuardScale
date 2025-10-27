@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GuardScale • Gestão de Escalas e Agentes</title>
+    <!-- Tailwind CSS -->
+    <link href="/assets/tw.css" rel="stylesheet" />
+    <!-- Fonte: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- removido: <style type="text/tailwindcss"> (portado para tw.css) -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <meta
+      name="description"
+      content="GuardScale: plataforma para gestão de agentes, escalas e relatórios com exportação de PDF e modo escuro."
+    />
+    <meta
+      name="keywords"
+      content="guardas, escalas, agentes, relatórios, segurança"
+    />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="http://localhost:3002/" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta
+      property="og:title"
+      content="GuardScale • Gestão de Escalas e Agentes"
+    />
+    <meta
+      property="og:description"
+      content="Gestão de agentes, escalas e relatórios."
+    />
+    <meta property="og:url" content="http://localhost:3002/" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta
+      name="twitter:title"
+      content="GuardScale • Gestão de Escalas e Agentes"
+    />
+    <meta
+      name="twitter:description"
+      content="Gestão de agentes, escalas e relatórios."
+    />
+    <meta name="theme-color" content="#1E40AF" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "GuardScale",
+        "url": "http://localhost:3002/"
+      }
+    </script>
+  </head>
+  <body class="min-h-screen pb-safe">
+    <!-- Banner (mensagens) -->
+    <div
+      id="banner"
+      class="fixed z-50 top-2 left-1/2 -translate-x-1/2 hidden px-4 py-2 rounded shadow"
+    ></div>
+
+    <!-- Header (agora global, no topo) -->
+    <header
+      class="sticky top-0 z-40 flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-white/80 backdrop-blur dark:bg-gray-900/80 dark:border-gray-700"
+    >
+      <div class="flex items-center gap-3">
+        <button
+          id="menuBtn"
+          class="md:hidden px-2 py-1 rounded bg-grayLight hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+          aria-label="Abrir menu"
+        >
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="text-blue-700 dark:text-secondary font-semibold text-xl">
+          GuardScale
+        </div>
+      </div>
+      <div id="operatorCard" class="flex items-center gap-3">
+        <!-- Indicador de realtime removido a pedido do usuário -->
+        <img
+          id="opAvatar"
+          class="w-8 h-8 rounded-full object-cover hidden"
+          alt="avatar"
+        />
+        <div
+          id="opAvatarFallback"
+          class="w-8 h-8 rounded-full bg-grayLight dark:bg-gray-700 flex items-center justify-center text-sm font-semibold"
+        >
+          OP
+        </div>
+        <div class="min-w-0">
+          <div id="opName" class="text-sm font-semibold truncate max-w-[40vw] sm:max-w-none">Operador</div>
+          <div id="opEmail" class="hidden sm:block text-xs text-gray-500 dark:text-gray-400"></div>
+        </div>
+        <button
+          id="themeToggle"
+          class="px-2 py-1 rounded bg-grayLight hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-sm"
+          title="Alternar tema"
+        >
+          <i id="themeIcon" class="fa-solid fa-moon"></i>
+        </button>
+        <div class="relative">
+          <button
+            id="opActionsBtn"
+            class="px-2 py-1 rounded bg-grayLight hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-sm"
+          >
+            Ações
+          </button>
+          <div
+            id="opActionsMenu"
+            class="absolute right-0 top-8 mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-lg hidden z-50 text-gray-800 dark:text-gray-100"
+          >
+            <button
+              id="actEditProfile"
+              class="block px-3 py-2 w-full text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              Editar Perfil
+            </button>
+            <button
+              id="actChangePassword"
+              class="block px-3 py-2 w-full text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              Trocar Senha
+            </button>
+            <button
+              id="actLogout"
+              class="block px-3 py-2 w-full text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              Sair
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sidebar móvel (drawer) e overlay -->
+    <div id="mobileOverlay" class="fixed inset-0 bg-black/30 hidden z-40"></div>
+    <aside
+      id="mobileSidebar"
+      class="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-900 border-r dark:border-gray-700 shadow transform -translate-x-full transition md:hidden z-50 hidden"
+      role="navigation"
+      aria-label="Principal"
+    >
+      <ul class="space-y-2 text-base p-4">
+        <li>
+          <a
+            href="#agents"
+            class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <i class="fa-solid fa-users text-gray-500 text-base"></i>
+            <span>Agentes</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="#users"
+            data-requires-role="admin"
+            class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <i class="fa-solid fa-user-gear text-gray-500 text-base"></i>
+            <span>Usuários</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="#schedules"
+            class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <i class="fa-solid fa-calendar-days text-gray-500 text-base"></i>
+            <span>Escalas</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="#reports"
+            class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <i class="fa-solid fa-chart-line text-gray-500 text-base"></i>
+            <span>Relatórios</span>
+          </a>
+        </li>
+        <li class="pt-2 border-t border-gray-200 dark:border-gray-700">
+          <a
+            href="#logout"
+            class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-red-600 dark:text-red-400"
+          >
+            <i class="fa-solid fa-right-from-bracket text-base"></i>
+            <span>Sair</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Container abaixo do cabeçalho: sidebar à esquerda, conteúdo à direita -->
+    <div class="min-h-screen flex">
+      <!-- Sidebar desktop -->
+      <aside
+        id="sidebar"
+        class="w-48 border-r border-gray-200 dark:border-gray-700 p-4 hidden md:block"
+        role="navigation"
+        aria-label="Principal"
+      >
+        <ul class="space-y-2 text-base">
+          <li>
+            <a
+              href="#agents"
+              class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <i class="fa-solid fa-users text-gray-500 text-base"></i>
+              <span>Agentes</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="#users"
+              data-requires-role="admin"
+              class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <i class="fa-solid fa-user-gear text-gray-500 text-base"></i>
+              <span>Usuários</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="#schedules"
+              class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <i class="fa-solid fa-calendar-days text-gray-500 text-base"></i>
+              <span>Escalas</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="#reports"
+              class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <i class="fa-solid fa-chart-line text-gray-500 text-base"></i>
+              <span>Relatórios</span>
+            </a>
+          </li>
+          <li class="pt-2 border-t border-gray-200 dark:border-gray-700">
+            <a
+              href="#logout"
+              class="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-red-600 dark:text-red-400"
+            >
+              <i class="fa-solid fa-right-from-bracket text-base"></i>
+              <span>Sair</span>
+            </a>
+          </li>
+        </ul>
+      </aside>
+
+      <!-- Main content -->
+      <main class="flex-1 min-w-0">
+        <!-- Conteúdo dos módulos -->
+        <div id="app" class="p-3 sm:p-4"></div>
+      </main>
+    </div>
+
+    <!-- Modal Perfil Operador -->
+    <div
+      id="opModal"
+      class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50"
+    >
+      <div class="modal-panel p-4 w-[min(420px,92vw)] max-h-[80vh] overflow-y-auto">
+        <h2 class="text-xl font-semibold mb-3">Perfil do Operador</h2>
+        <form id="opForm" class="grid gap-3">
+          <div>
+            <label class="text-sm">Nome</label>
+            <input
+              name="name"
+              class="w-full border rounded px-3 py-2"
+              required
+            />
+          </div>
+          <div>
+            <label class="text-sm">Avatar URL</label>
+            <input
+              name="avatarUrl"
+              class="w-full border rounded px-3 py-2"
+              placeholder="https://..."
+            />
+          </div>
+          <div class="flex flex-col sm:flex-row justify-end gap-2">
+            <button type="button" id="opCancel" class="btn-secondary btn-block">
+              Cancelar
+            </button>
+            <button class="btn-primary btn-block">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- Modal Troca de Senha -->
+    <div
+      id="pwdModal"
+      class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50"
+    >
+      <div class="modal-panel p-4 w-[min(420px,92vw)] max-h-[80vh] overflow-y-auto">
+        <h2 class="text-xl font-semibold mb-3">Trocar Senha</h2>
+        <form id="pwdForm" class="grid gap-3">
+          <div>
+            <label class="text-sm">Senha atual</label>
+            <input name="currentPassword" type="password" class="w-full border rounded px-3 py-2" required />
+          </div>
+          <div>
+            <label class="text-sm">Nova senha</label>
+            <input name="newPassword" type="password" class="w-full border rounded px-3 py-2" required />
+          </div>
+          <div class="flex flex-col sm:flex-row justify-end gap-2">
+            <button type="button" id="pwdCancel" class="btn-secondary btn-block">Cancelar</button>
+            <button class="btn-primary btn-block">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

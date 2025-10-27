@@ -1,0 +1,7 @@
+# robots.txt
+# Autor: Antonio Rafael Souza Cruz de Noronha — rafasouzacruz@gmail.com
+# Permite indexação básica do site. Ajuste Disallow conforme necessidade.
+User-agent: *
+Allow: /
+
+Sitemap: http://localhost:3002/sitemap.xml
