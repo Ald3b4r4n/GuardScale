@@ -381,7 +381,12 @@ app.post('/api/auth/request', requestLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Tipo inválido' });
     }
     const ua = req.headers['user-agent'] || '';
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+    const ip =
+      req.headers['x-forwarded-for'] ||
+      req.ip ||
+      (req.connection && req.connection.remoteAddress) ||
+      (req.socket && req.socket.remoteAddress) ||
+      '';
 
     // Enriquecimento: incluir dados do usuário no caso de esqueci senha
     let userDoc = null;
