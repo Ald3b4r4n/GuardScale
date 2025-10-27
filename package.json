@@ -5,25 +5,25 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "build": "npx tailwindcss -i ./public/tw.css -o ./public/assets/tw.css --minify",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint -c eslint.config.mjs .",
-    "lint:fix": "eslint -c eslint.config.mjs . --fix",
-    "lint:check": "eslint --print-config eslint.config.mjs",
-    "build:css": "npx tailwindcss -i ./public/tw.css -o ./public/assets/tw.css --minify"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:check": "eslint --print-config .eslintrc.js"
   },
   "keywords": [],
   "author": "Antonio Rafael Souza Cruz de Noronha",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "cookie-parser": "^1.4.6",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dayjs": "^1.11.18",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "express-rate-limit": "^7.4.0",
-    "helmet": "^7.2.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.2",
     "morgan": "^1.10.1",
@@ -33,7 +33,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",
-    "@tailwindcss/cli": "^4.1.16",
     "eslint": "^9.38.0",
     "eslint-plugin-node": "^11.1.0",
     "tailwindcss": "^4.1.16"

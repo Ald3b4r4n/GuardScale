@@ -186,11 +186,10 @@ export async function renderLogin() {
     const capsWarn = document.getElementById('capsWarn');
     if (passInput && capsWarn) {
       passInput.addEventListener('keydown', (ev) => {
-        const on =
-          typeof ev.getModifierState === 'function'
-            ? ev.getModifierState('CapsLock')
-            : false;
-        capsWarn.classList.toggle('hidden', !on);
+        try {
+          const on = ev.getModifierState && ev.getModifierState('CapsLock');
+          capsWarn.classList.toggle('hidden', !on);
+        } catch (_) {}
       });
       passInput.addEventListener('blur', () =>
         capsWarn.classList.add('hidden')
@@ -210,9 +209,11 @@ export async function renderLogin() {
         const r = await api.post('/api/auth/login', body);
         window.__authUser = r.user;
         // Atualiza cabeçalho com dados do usuário logado
-        if (typeof window.renderOperator === 'function') {
-          window.renderOperator();
-        }
+        try {
+          if (typeof window.renderOperator === 'function') {
+            window.renderOperator();
+          }
+        } catch (_e) {}
         showToast('success', 'Bem-vindo!');
         location.hash = '#agents';
       } catch (_err) {
@@ -330,17 +331,15 @@ export async function renderLogin() {
           forgotForm.reset();
         } catch (_e) {
           let txt = String((_e && _e.message) || '');
-          let j = null;
           try {
-            j = JSON.parse(txt);
-          } catch (_ignored) {
-            j = null;
-          }
-          if (j && j.detail === 'smtp_not_configured') {
-            txt = 'SMTP não configurado. Solicitação registrada sem e-mail.';
-          } else if (j && j.detail === 'smtp_send_failed') {
-            txt = 'Falha ao enviar e-mail (SMTP). Verifique credenciais e conexão TLS.';
-          }
+            const j = JSON.parse(txt);
+            if (j && j.detail === 'smtp_not_configured') {
+              txt = 'SMTP não configurado. Solicitação registrada sem e-mail.';
+            } else if (j && j.detail === 'smtp_send_failed') {
+              txt =
+                'Falha ao enviar e-mail (SMTP). Verifique credenciais e conexão TLS.';
+            }
+          } catch {}
           showToast('error', txt || 'Falha ao enviar solicitação');
         } finally {
           if (btn) {
@@ -377,17 +376,15 @@ export async function renderLogin() {
           createForm.reset();
         } catch (_e) {
           let txt = String((_e && _e.message) || '');
-          let j = null;
           try {
-            j = JSON.parse(txt);
-          } catch (_ignored) {
-            j = null;
-          }
-          if (j && j.detail === 'smtp_not_configured') {
-            txt = 'SMTP não configurado. Solicitação registrada sem e-mail.';
-          } else if (j && j.detail === 'smtp_send_failed') {
-            txt = 'Falha ao enviar e-mail (SMTP). Verifique credenciais e conexão TLS.';
-          }
+            const j = JSON.parse(txt);
+            if (j && j.detail === 'smtp_not_configured') {
+              txt = 'SMTP não configurado. Solicitação registrada sem e-mail.';
+            } else if (j && j.detail === 'smtp_send_failed') {
+              txt =
+                'Falha ao enviar e-mail (SMTP). Verifique credenciais e conexão TLS.';
+            }
+          } catch {}
           showToast('error', txt || 'Falha ao enviar solicitação');
         } finally {
           if (btn) {

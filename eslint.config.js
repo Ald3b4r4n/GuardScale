@@ -49,8 +49,7 @@ export default [
       'no-multi-spaces': 'error',
       'no-unused-vars': ['warn', {
         'argsIgnorePattern': '^_',
-        'varsIgnorePattern': '^_',
-        'caughtErrorsIgnorePattern': '^_'
+        'varsIgnorePattern': '^_'
       }],
       'no-use-before-define': ['error', {
         'functions': false,
@@ -129,7 +128,7 @@ export default [
       }
     },
     rules: {
-      'no-console': ['warn', { allow: ['warn', 'error'] }]
+      'no-console': 'warn' // Avisar sobre console.log no frontend
     }
   }
 ];

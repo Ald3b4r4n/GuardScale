@@ -65,7 +65,7 @@
       id="banner"
       class="fixed z-50 top-2 left-1/2 -translate-x-1/2 hidden px-4 py-2 rounded shadow"
     ></div>
-
+    
     <!-- Header (agora global, no topo) -->
     <header
       class="sticky top-0 z-40 flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-white/80 backdrop-blur dark:bg-gray-900/80 dark:border-gray-700"
@@ -320,7 +320,17 @@
         </form>
       </div>
     </div>
-    <script src="/socket.io/socket.io.js"></script>
+    <!-- Em produção (Vercel) não há Socket.IO; carregue apenas em localhost -->
+    <script>
+      (function () {
+        var isLocal = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+        if (isLocal) {
+          var s = document.createElement('script');
+          s.src = '/socket.io/socket.io.js';
+          document.head.appendChild(s);
+        }
+      })();
+    </script>
     <script src="/app.js" type="module"></script>
   </body>
 </html>

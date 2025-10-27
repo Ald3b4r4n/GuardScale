@@ -1,0 +1,9 @@
+﻿
+C:\Users\rafas\Desktop\Apps\GuardScale\public\modules\schedules.js
+  315:19  error  Expected { after 'if' condition  curly
+  466:22  error  Expected { after 'if' condition  curly
+  467:50  error  Expected { after 'if' condition  curly
+
+Ô£û 3 problems (3 errors, 0 warnings)
+  3 errors and 0 warnings potentially fixable with the `--fix` option.
+

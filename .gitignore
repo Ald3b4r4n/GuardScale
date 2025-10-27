@@ -19,10 +19,6 @@ coverage/
 .cache/
 .tmp/
 
-# ---- History cleaning artifacts ----
-.git.bfg-report/
-tools/
-
 # ---- OS files ----
 .DS_Store
 Thumbs.db

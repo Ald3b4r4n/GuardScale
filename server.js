@@ -7,6 +7,12 @@
  */
 'use strict';
 require('dotenv').config();
+// Alias de timezone: permite usar APP_TIMEZONE em vez de TZ
+const appTZ = process.env.APP_TIMEZONE || process.env.TZ;
+if (appTZ) {
+  // Nota: Node lê TZ no start; ainda assim mantemos para libs que o consultam
+  process.env.TZ = appTZ;
+}
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -26,7 +32,7 @@ const { sendSupportEmail } = require('./src/services/mailer');
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
-dayjs.tz.setDefault(process.env.TZ || 'America/Sao_Paulo');
+dayjs.tz.setDefault(appTZ || 'America/Sao_Paulo');
 
 const { Agent } = require('./src/models/Agent');
 const { Shift } = require('./src/models/Shift');

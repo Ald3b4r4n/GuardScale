@@ -36,10 +36,10 @@
  */
 @layer base {
   html {
-    @apply scroll-smooth overflow-x-hidden;
+    @apply scroll-smooth;
   }
   body {
-    @apply bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 font-sans overflow-x-hidden;
+    @apply bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 font-sans;
   }
 
   /* Campos padrão (inputs e selects) */
@@ -171,7 +171,4 @@
   .cell-condensed {
     @apply p-2 sm:p-3;
   }
-  /* Oculta barras de rolagem visuais (mantém rolagem funcional) */
-  .no-scrollbar::-webkit-scrollbar { display: none; }
-  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }

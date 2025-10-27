@@ -16,21 +16,8 @@ function ensureToastContainer() {
   if (!__toastContainer) {
     __toastContainer = document.createElement('div');
     __toastContainer.id = 'toastContainer';
-    // Mobile: bottom-center (menos intrusivo), Desktop: bottom-right
-    __toastContainer.className = [
-      'fixed z-[60]',
-      // posicionamento
-      'bottom-4 left-4 right-4',
-      'sm:left-auto sm:right-4 sm:bottom-4',
-      // empilhamento e layout
-      'flex flex-col-reverse gap-2 items-stretch sm:items-end',
-      // evitar bloquear cliques fora dos toasts
-      'pointer-events-none',
-      // respeitar safe-area no iOS
-      'pb-[env(safe-area-inset-bottom,0px)]'
-    ].join(' ');
-    __toastContainer.setAttribute('aria-live', 'polite');
-    __toastContainer.setAttribute('aria-atomic', 'true');
+    __toastContainer.className =
+      'fixed z-[60] top-4 right-4 flex flex-col gap-2';
     document.body.appendChild(__toastContainer);
   }
 }
@@ -55,30 +42,12 @@ export function showToast(
     info: 'bg-blue-600 text-white'
   };
   const el = document.createElement('div');
-  el.setAttribute('role', 'status');
-  el.className = [
-    // dimensões
-    'px-4 py-2 rounded-lg shadow-lg ring-1 ring-black/5',
-    'w-full sm:w-auto',
-    'max-w-[92vw] sm:max-w-sm',
-    // interação e pilha
-    'pointer-events-auto',
-    // animação
-    'transition-all duration-300 ease-out',
-    'opacity-0 translate-y-2',
-    // cor
-    colors[type] || colors.info
-  ].join(' ');
+  el.className = `px-4 py-2 rounded shadow ${colors[type] || colors.info}`;
   el.textContent = message;
   __toastContainer.appendChild(el);
-  // Entrada suave
-  requestAnimationFrame(() => {
-    el.classList.remove('opacity-0', 'translate-y-2');
-    el.classList.add('opacity-100', 'translate-y-0');
-  });
   const remove = () => {
-    el.classList.add('opacity-0', 'translate-y-2');
-    setTimeout(() => el.remove(), 250);
+    el.classList.add('opacity-0');
+    setTimeout(() => el.remove(), 200);
   };
   setTimeout(remove, timeout);
   el.addEventListener('click', remove);
