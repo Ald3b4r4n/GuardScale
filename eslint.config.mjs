@@ -27,6 +27,7 @@ export default [
         sessionStorage: "readonly",
         alert: "readonly",
         confirm: "readonly",
+        requestAnimationFrame: "readonly",
 
         // removed io global to avoid no-redeclare
       },

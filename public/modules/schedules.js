@@ -312,7 +312,9 @@ export async function renderSchedules({ banner }) {
     // Cartão para mobile (< sm) com as mesmas informações e ações
     function scheduleCard(it) {
       const formatBR = (iso) => {
-        if (!iso) return '';
+        if (!iso) {
+          return '';
+        }
         const [y, m, d] = String(iso).split('-');
         return `${d}/${m}/${y}`;
       };
@@ -321,22 +323,22 @@ export async function renderSchedules({ banner }) {
           ? `${formatBR(it.date)} a ${formatBR(it.endDate)}`
           : formatBR(it.date);
       return `
-        <div class='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3'>
+        <div class='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3'>
           <div class='flex items-start justify-between gap-3'>
             <div class='min-w-0'>
               <div class='font-semibold truncate'>${it.agentName || it.agentId}</div>
               <div class='text-xs text-grayMid'>${dateText}</div>
             </div>
-            <div class='flex gap-2'>
+            <div class='flex flex-wrap gap-2 justify-end'>
               <button class='editBtn btn-secondary text-xs px-2 py-1' data-id='${it._id || ''}'>Editar</button>
               <button class='delBtn btn-danger text-xs px-2 py-1' data-id='${it._id || ''}'>Excluir</button>
             </div>
           </div>
-          <div class='mt-2 text-sm grid grid-cols-2 gap-x-4 gap-y-1'>
+          <div class='mt-2 text-sm grid grid-cols-1 gap-y-1'>
             <div><span class='text-grayMid'>Início:</span> ${it.start}</div>
             <div><span class='text-grayMid'>Fim:</span> ${it.end}</div>
             <div><span class='text-grayMid'>Horas:</span> ${it.durationHours || ''}</div>
-            <div class='col-span-2 break-words'><span class='text-grayMid'>Obs.:</span> ${it.notes || ''}</div>
+            <div class='break-words'><span class='text-grayMid'>Obs.:</span> ${it.notes || ''}</div>
           </div>
         </div>`;
     }
@@ -463,8 +465,12 @@ export async function renderSchedules({ banner }) {
         mobileList.querySelectorAll('.delBtn').forEach((btn) => {
           btn.onclick = async () => {
             const id = btn.dataset.id;
-            if (!id) return;
-            if (!confirm('Excluir este turno?')) return;
+            if (!id) {
+              return;
+            }
+            if (!confirm('Excluir este turno?')) {
+              return;
+            }
             try {
               await api.del(`/api/shifts/${id}`);
               banner('success', 'Turno removido');

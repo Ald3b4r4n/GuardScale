@@ -510,15 +510,16 @@ function agentCard(a) {
     : `<span class='px-2 py-0.5 rounded text-xs ${statusClass}'>${a.status || 'disponível'}</span>`;
   return `
     <div class='rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3'>
-      <div class='flex items-start justify-between gap-3'>
-        <div class='flex items-center gap-3 min-w-0'>
-          ${avatar}
-          <div class='min-w-0'>
-            <div class='font-semibold truncate'>${a.name}</div>
-            <div class='text-xs text-grayMid break-all'>CPF: ${cpf}</div>
+      <div class='flex items-center gap-3 min-w-0'>
+        ${avatar}
+        <div class='min-w-0 w-full'>
+          <div class='font-semibold truncate'>${a.name}</div>
+          <div class='mt-1 flex items-center gap-2'>
+            <span class='text-xs text-grayMid'>Status:</span>
+            ${statusEl}
           </div>
+          <div class='text-xs text-grayMid break-all mt-1'>CPF: ${cpf}</div>
         </div>
-        <div>${statusEl}</div>
       </div>
       <div class='mt-2 text-sm grid gap-1'>
         <div><span class='text-grayMid'>Telefone:</span> ${phone}</div>
