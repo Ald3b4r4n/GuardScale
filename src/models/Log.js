@@ -1,24 +1,22 @@
-/**
- * Modelo: Log (Registro de eventos)
- * Autor: Antonio Rafael Souza Cruz de Noronha — rafasouzacruz@gmail.com
- * Descrição: Mantém logs simples para auditoria/diagnóstico.
- * Campos:
- * - ts: timestamp do evento
- * - user: operador/autor da ação
- * - entity: domínio afetado (agents|shifts|configs)
- * - operation: tipo da operação (create|update|delete|generate|...)
- * - before/after: estado anterior/posterior para auditoria
+/*
+ * Modelo: Log (auditoria e eventos)
+ * Campos flexíveis para registrar operações, solicitações e metadados.
  */
 const mongoose = require('mongoose');
 
 const LogSchema = new mongoose.Schema(
   {
-    ts: { type: Date, default: () => new Date() },
+    ts: { type: Date, default: () => new Date(), index: true },
+    level: { type: String, default: 'info' },
+    type: { type: String },
+    message: { type: String },
     user: { type: String },
-    entity: { type: String }, // agents|shifts|configs
-    operation: { type: String }, // create|update|delete|generate
-    before: { type: Object },
-    after: { type: Object }
+    entity: { type: String },
+    operation: { type: String },
+    before: {},
+    after: {},
+    meta: {},
+    requestId: { type: String }
   },
   { collection: 'logs' }
 );
