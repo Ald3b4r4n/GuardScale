@@ -223,12 +223,13 @@ async function router() {
     headerEl.classList.toggle("hidden", isLogin);
   }
   // Ajusta o fundo do body para evitar faixa branca na tela de login
-  try {
-    document.body.classList.toggle('bg-[#071427]', isLogin);
+  const bodyEl = typeof document !== "undefined" ? document.body : null;
+  if (bodyEl) {
+    bodyEl.classList.toggle('bg-[#071427]', isLogin);
     if (!isLogin) {
-      document.body.classList.remove('bg-[#071427]');
+      bodyEl.classList.remove('bg-[#071427]');
     }
-  } catch (_e) {}
+  }
   if (sideDesktop) {
     // Manter a sidebar desktop SEMPRE oculta em mobile (classe 'hidden' fixa)
     sideDesktop.classList.add("hidden");
@@ -288,9 +289,7 @@ async function router() {
           const me = await fetch("/api/auth/me", { credentials: "include" });
           if (me.ok) {
             window.__authUser = await me.json();
-            try {
-              renderOperator();
-            } catch (_e) {}
+            renderOperator();
           } else {
             location.hash = "#login";
             app.innerHTML = await renderLogin();
@@ -344,9 +343,7 @@ window.addEventListener("hashchange", router);
 window.addEventListener("DOMContentLoaded", () => {
   renderOperator();
   // expõe para outros módulos atualizarem cabeçalho pós-login
-  try {
-    window.renderOperator = renderOperator;
-  } catch (_e) {}
+  window.renderOperator = renderOperator;
   bindOperatorActions();
   initRealtime();
   // Tema
