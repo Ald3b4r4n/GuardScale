@@ -177,30 +177,18 @@ Em telas pequenas, a tabela é ocultada e os itens aparecem como cartões com os
 
 ## Arquitetura
 
-```mermaid
-flowchart LR
-    A[Cliente Web (SPA)] -- HTTP/JSON --> B[Express Server]
-    B -- JWT Cookie --> A
-    B -- Socket.IO (data-update/status) --> A
-    B -- Mongoose Models --> C[(MongoDB)]
-    B -. Services .-> D[(Relatórios, PDF, Escalas)]
-    D --> C
-```
+- Frontend estático: arquivos em `public/` servidos diretamente (HTML, CSS, JS).
+- Backend: `Express` exportado em `server.js` e empacotado como Function (`api/index.js`).
+- Persistência: `MongoDB` via `mongoose`.
+- Autenticação: JWT assinado no cookie httpOnly `gs_auth`.
+- Funcionalidades: CRUD de usuários/agentes/turnos, geração de escalas e PDF.
 
 ### Fluxo de Autenticação
 
-```mermaid
-sequenceDiagram
-  participant U as Usuário
-  participant S as Server
-  participant DB as MongoDB
-  U->>S: POST /api/auth/login {email, password}
-  S->>DB: Busca usuário e valida senha
-  DB-->>S: OK
-  S->>U: Set-Cookie gs_auth; { ok: true, user }
-  U->>S: GET /api/auth/me (com cookie)
-  S-->>U: { id, email, role }
-```
+1) Usuário envia `POST /api/auth/login` com `{ email, password }`.
+2) Servidor valida credenciais no MongoDB e, em caso de sucesso, grava o cookie `gs_auth` (2h).
+3) O frontend consulta `GET /api/auth/me` para obter `{ id, email, role }` e montar a interface.
+4) `POST /api/auth/logout` limpa o cookie; `POST /api/auth/change-password` troca a senha.
 
 ## Resumo Visual de Rotas
 
