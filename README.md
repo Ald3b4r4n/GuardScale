@@ -58,28 +58,13 @@ Plataforma simples para gestão de agentes, turnos (shifts), geração de escala
 npm install
 ```
 
-2. Configure o `.env` (exemplo):
+2. Copie o arquivo de exemplo e preencha as variáveis de ambiente:
 
 ```
-MONGO_URI=mongodb://127.0.0.1:27017/guardscale
-JWT_SECRET=troque_este_segredo_em_producao
-ADMIN_EMAIL=admin@local
-ADMIN_PASSWORD=admin123
-NODE_ENV=development
-TZ=America/Sao_Paulo
-# CORS permitido (separe por vírgula, p.ex. http://localhost:3000)
-# CORS_ORIGIN=http://localhost:3000
-
-# SMTP (opcional, para /api/auth/request)
-SUPPORT_EMAIL_TO=seuemail@dominio.com
-SUPPORT_EMAIL_FROM=GuardScale <no-reply@dominio.com>
-
-
-
-
-
-
+cp .env.example .env
 ```
+
+Edite `.env` com seus valores (não publique segredos). No exemplo incluímos placeholders seguros e comentários.
 
 3. Compile o CSS do Tailwind para `public/assets/tw.css`:
 
@@ -178,12 +163,12 @@ Em telas pequenas, a tabela é ocultada e os itens aparecem como cartões com os
 ## Arquitetura
 
 ```mermaid
-flowchart LR
-    A[Cliente Web (SPA)] -- HTTP/JSON --> B[Express Server]
-    B -- JWT Cookie --> A
-    B -- Socket.IO (data-update/status) --> A
-    B -- Mongoose Models --> C[(MongoDB)]
-    B -. Services .-> D[(Relatórios, PDF, Escalas)]
+graph LR
+    A[Cliente Web (SPA)] -->|HTTP/JSON| B[Express Server]
+    B -->|JWT Cookie| A
+    B -->|Socket.IO (data-update/status)| A
+    B -->|Mongoose Models| C[(MongoDB)]
+    B -.->|Services| D[(Relatórios, PDF, Escalas)]
     D --> C
 ```
 
@@ -191,13 +176,17 @@ flowchart LR
 
 ```mermaid
 sequenceDiagram
+  autonumber
   participant U as Usuário
   participant S as Server
   participant DB as MongoDB
+
   U->>S: POST /api/auth/login {email, password}
-  S->>DB: Busca usuário e valida senha
+  S->>DB: Validar usuário e senha
   DB-->>S: OK
-  S->>U: Set-Cookie gs_auth; { ok: true, user }
+  S-->>U: 200 OK + Set-Cookie gs_auth
+  Note right of U: Cookie httpOnly; SameSite=lax; secure em produção
+
   U->>S: GET /api/auth/me (com cookie)
   S-->>U: { id, email, role }
 ```
