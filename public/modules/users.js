@@ -22,6 +22,7 @@ function userRow(u) {
       <div class='flex gap-2'>
         <button class='edit btn-secondary px-3 py-1.5 text-xs rounded-lg whitespace-nowrap' title='Editar usuário' aria-label='Editar usuário' data-id='${u._id}'>Editar</button>
         <button class='reset btn-primary px-3 py-1.5 text-xs rounded-lg whitespace-nowrap' title='Resetar senha' aria-label='Resetar senha' data-id='${u._id}' data-email='${u.email}'>Resetar senha</button>
+        <button class='del btn-danger px-3 py-1.5 text-xs rounded-lg whitespace-nowrap' title='Excluir usuário' aria-label='Excluir usuário' data-id='${u._id}' data-email='${u.email}'>Excluir</button>
       </div>
     </td>
   </tr>`;
@@ -44,6 +45,7 @@ function userCard(u) {
       <div class='mt-3 flex items-center gap-2'>
         <button class='edit btn-secondary px-3 py-1.5 text-xs rounded-lg whitespace-nowrap' data-id='${u._id}'>Editar</button>
         <button class='reset btn-primary px-3 py-1.5 text-xs rounded-lg whitespace-nowrap' data-id='${u._id}' data-email='${u.email}'>Resetar senha</button>
+        <button class='del btn-danger px-3 py-1.5 text-xs rounded-lg whitespace-nowrap' data-id='${u._id}' data-email='${u.email}'>Excluir</button>
       </div>
     </div>`;
 }
@@ -259,6 +261,26 @@ export async function renderUsers({ banner }) {
             rModal.style.display = 'none';
             rPwd.value = '';
           };
+        };
+      });
+      // Excluir usuário
+      document.querySelectorAll('button.del').forEach((b) => {
+        b.onclick = async () => {
+          const id = b.dataset.id;
+          const email = b.dataset.email || '';
+          if (!id) {
+            return;
+          }
+          if (!confirm(`Excluir usuário ${email}?`)) {
+            return;
+          }
+          try {
+            await api.del(`/api/users/${id}`);
+            banner('success', 'Usuário excluído');
+          } catch (_err) {
+            banner('error', 'Falha ao excluir usuário');
+          }
+          reload();
         };
       });
     }

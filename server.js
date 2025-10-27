@@ -20,7 +20,7 @@ const bcrypt = require('bcryptjs');
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 const timezone = require('dayjs/plugin/timezone');
-const http = require('http');
+// http/socket.io serão inicializados condicionalmente (ambiente serverful)
 const { Log } = require('./src/models/Log');
 const { sendSupportEmail } = require('./src/services/mailer');
 
@@ -50,10 +50,15 @@ if (process.env.NODE_ENV !== 'production') {
 }
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Inicializa HTTP server e Socket.IO antes das rotas
-const server = http.createServer(app);
-const { Server } = require('socket.io');
-const io = new Server(server, { cors: { origin: '*' } });
+// Inicializa HTTP server e Socket.IO apenas fora do ambiente Vercel
+let server = null;
+let io = { emit: () => {} };
+if (!process.env.VERCEL) {
+  const http = require('http');
+  const { Server } = require('socket.io');
+  server = http.createServer(app);
+  io = new Server(server, { cors: { origin: '*' } });
+}
 
 const MONGO_URI =
   process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/guardscale';
@@ -329,6 +334,33 @@ app.put(
     }
   }
 );
+
+// Remover usuário (apenas admin). Impede excluir a si mesmo e o último admin ativo.
+app.delete('/api/users/:id', authRequired, requireRole('admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: 'ID inválido' });
+    }
+    if (String(req.user.sub) === String(id)) {
+      return res.status(400).json({ error: 'Não é possível excluir a si mesmo' });
+    }
+    const user = await User.findById(id).select('role active');
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+    if (user.role === 'admin') {
+      const otherAdmins = await User.countDocuments({ role: 'admin', active: true, _id: { $ne: id } });
+      if (otherAdmins === 0) {
+        return res.status(400).json({ error: 'Não é possível excluir o último administrador' });
+      }
+    }
+    await User.deleteOne({ _id: id });
+    return res.json({ ok: true });
+  } catch (_e) {
+    return res.status(500).json({ error: 'Falha ao excluir usuário' });
+  }
+});
 
 // Solicitações de suporte: esqueci senha e criar acesso
 const requestLimiter = rateLimit({ windowMs: 60 * 60 * 1000, limit: 30, standardHeaders: 'draft-7', legacyHeaders: false });
@@ -969,15 +1001,21 @@ app.get('/api/reports', async (req, res) => {
 
 // Socket.IO — notifica clientes sobre alterações (connect/status)
 
-io.on('connection', (socket) => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('socket connected', socket.id);
-  }
-  socket.emit('status', { ok: true, ts: Date.now() });
-});
+if (io && typeof io.on === 'function') {
+  io.on('connection', (socket) => {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('socket connected', socket.id);
+    }
+    socket.emit('status', { ok: true, ts: Date.now() });
+  });
+}
 
 // Replace app.listen with server.listen
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () =>
-  console.log(`GuardScale rodando em http://localhost:${PORT}`)
-);
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 3000;
+  server.listen(PORT, () =>
+    console.log(`GuardScale rodando em http://localhost:${PORT}`)
+  );
+}
+
+module.exports = app;

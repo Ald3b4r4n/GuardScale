@@ -58,13 +58,28 @@ Plataforma simples para gestão de agentes, turnos (shifts), geração de escala
 npm install
 ```
 
-2. Copie o arquivo de exemplo e preencha as variáveis de ambiente:
+2. Configure o `.env` (exemplo):
 
 ```
-cp .env.example .env
-```
+MONGO_URI=mongodb://127.0.0.1:27017/guardscale
+JWT_SECRET=troque_este_segredo_em_producao
+ADMIN_EMAIL=admin@local
+ADMIN_PASSWORD=admin123
+NODE_ENV=development
+TZ=America/Sao_Paulo
+# CORS permitido (separe por vírgula, p.ex. http://localhost:3000)
+# CORS_ORIGIN=http://localhost:3000
 
-Edite `.env` com seus valores (não publique segredos). No exemplo incluímos placeholders seguros e comentários.
+# SMTP (opcional, para /api/auth/request)
+SUPPORT_EMAIL_TO=seuemail@dominio.com
+SUPPORT_EMAIL_FROM=GuardScale <no-reply@dominio.com>
+SMTP_SERVICE=gmail
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_SECURE=true
+SMTP_USER=usuario@gmail.com
+SMTP_PASS=senha_de_app
+```
 
 3. Compile o CSS do Tailwind para `public/assets/tw.css`:
 
@@ -163,12 +178,12 @@ Em telas pequenas, a tabela é ocultada e os itens aparecem como cartões com os
 ## Arquitetura
 
 ```mermaid
-graph LR
-    A[Cliente Web (SPA)] -->|HTTP/JSON| B[Express Server]
-    B -->|JWT Cookie| A
-    B -->|Socket.IO (data-update/status)| A
-    B -->|Mongoose Models| C[(MongoDB)]
-    B -.->|Services| D[(Relatórios, PDF, Escalas)]
+flowchart LR
+    A[Cliente Web (SPA)] -- HTTP/JSON --> B[Express Server]
+    B -- JWT Cookie --> A
+    B -- Socket.IO (data-update/status) --> A
+    B -- Mongoose Models --> C[(MongoDB)]
+    B -. Services .-> D[(Relatórios, PDF, Escalas)]
     D --> C
 ```
 
@@ -176,17 +191,13 @@ graph LR
 
 ```mermaid
 sequenceDiagram
-  autonumber
   participant U as Usuário
   participant S as Server
   participant DB as MongoDB
-
   U->>S: POST /api/auth/login {email, password}
-  S->>DB: Validar usuário e senha
+  S->>DB: Busca usuário e valida senha
   DB-->>S: OK
-  S-->>U: 200 OK + Set-Cookie gs_auth
-  Note right of U: Cookie httpOnly; SameSite=lax; secure em produção
-
+  S->>U: Set-Cookie gs_auth; { ok: true, user }
   U->>S: GET /api/auth/me (com cookie)
   S-->>U: { id, email, role }
 ```
@@ -196,7 +207,7 @@ sequenceDiagram
 | Grupo | Principais Endpoints |
 |------|-----------------------|
 | 🔐 Auth | `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`, `POST /auth/change-password`, `POST /auth/request` |
-| 👥 Usuários | `GET /users`, `POST /users`, `POST /users/:id/reset-password`, `PUT /users/:id` |
+| 👥 Usuários | `GET /users`, `POST /users`, `POST /users/:id/reset-password`, `PUT /users/:id`, `DELETE /users/:id` |
 | 🧑‍✈️ Agentes | `GET /agents`, `POST /agents`, `PUT /agents/:id`, `DELETE /agents/:id` |
 | 🕒 Turnos | `GET /shifts`, `POST /shifts`, `PUT /shifts/:id`, `DELETE /shifts/:id` |
 | 📅 Escalas | `POST /schedules/generate`, `POST /schedules/pdf` |
@@ -243,6 +254,10 @@ Todas as rotas abaixo (exceto as de autenticação e `POST /api/auth/request`) e
 - PUT `/api/users/:id`
   - Body: `{ role?, active?, email? }` (verifica conflito de e-mail).
   - Retorna `{ id, email, role, active }`.
+
+- DELETE `/api/users/:id`
+  - Remove o usuário. Bloqueios: não permite excluir a si mesmo, nem o último admin ativo.
+  - Retorna `{ ok: true }`.
 
 ### Agentes
 
