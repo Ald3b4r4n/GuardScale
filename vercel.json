@@ -1,4 +1,5 @@
 {
+  "version": 2,
   "builds": [
     { "src": "api/**/*.js", "use": "@vercel/node" },
     {
@@ -6,5 +7,8 @@
       "use": "@vercel/static-build",
       "config": { "distDir": "public" }
     }
+  ],
+  "routes": [
+    { "src": "^/api($|/.*)", "dest": "/api/index.js" }
   ]
 }
