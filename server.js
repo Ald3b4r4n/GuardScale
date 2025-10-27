@@ -386,24 +386,32 @@ app.post('/api/auth/request', requestLimiter, async (req, res) => {
     // Enriquecimento: incluir dados do usuário no caso de esqueci senha
     let userDoc = null;
     if (type === 'forgot_password') {
-      const u = await User.findOne({ email: String(email).toLowerCase() }).select('_id email role active createdAt updatedAt');
-      if (u) {
-        userDoc = {
-          id: String(u._id),
-          email: u.email,
-          role: u.role,
-          active: !!u.active,
-          createdAt: u.createdAt ? new Date(u.createdAt).toLocaleString('pt-BR') : undefined,
-          updatedAt: u.updatedAt ? new Date(u.updatedAt).toLocaleString('pt-BR') : undefined
-        };
+      try {
+        const u = await User.findOne({ email: String(email).toLowerCase() }).select('_id email role active createdAt updatedAt');
+        if (u) {
+          userDoc = {
+            id: String(u._id),
+            email: u.email,
+            role: u.role,
+            active: !!u.active,
+            createdAt: u.createdAt ? new Date(u.createdAt).toLocaleString('pt-BR') : undefined,
+            updatedAt: u.updatedAt ? new Date(u.updatedAt).toLocaleString('pt-BR') : undefined
+          };
+        }
+      } catch (e) {
+        console.warn('[support] Não foi possível consultar usuário (DB indisponível?)');
       }
     }
-    await Log.create({
-      type: 'auth_request',
-      message: type,
-      meta: { email: String(email).toLowerCase(), payload, ua, ip },
-      level: 'info'
-    });
+    try {
+      await Log.create({
+        type: 'auth_request',
+        message: type,
+        meta: { email: String(email).toLowerCase(), payload, ua, ip },
+        level: 'info'
+      });
+    } catch (e) {
+      console.warn('[support] Falha ao registrar log (DB indisponível?)');
+    }
     // Envio assíncrono para reduzir latência da resposta
     sendSupportEmail({ type, email: String(email).toLowerCase(), payload, ua, ip, user: userDoc })
       .then((send) => {
