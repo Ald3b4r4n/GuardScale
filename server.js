@@ -88,6 +88,19 @@ function signToken(payload, opts = {}) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: '2h', ...opts });
 }
 
+// Garante conexão ativa com o banco antes de operações críticas
+async function ensureDbConnected() {
+  if (mongoose.connection.readyState === 1) {
+    return true; // conectado
+  }
+  try {
+    await mongoose.connect(MONGO_URI);
+    return true;
+  } catch (_e) {
+    return false;
+  }
+}
+
 function authRequired(req, res, next) {
   const token = req.cookies[COOKIE_NAME];
   if (!token) {
@@ -171,6 +184,10 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     const { email, password } = req.body || {};
     if (!email || !password) {
       return res.status(400).json({ error: 'Informe email e senha' });
+    }
+    const dbOk = await ensureDbConnected();
+    if (!dbOk) {
+      return res.status(503).json({ error: 'Serviço de autenticação indisponível' });
     }
     const user = await User.findOne({ email: String(email).toLowerCase() });
     if (!user || !user.active) {
