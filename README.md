@@ -154,12 +154,6 @@ docker run -d --name guardscale-mongo \
 - Em produção, defina credenciais fortes via variáveis de ambiente e troque `JWT_SECRET`.
 - Não exponha e-mails reais, CPFs, telefones ou chaves PIX em exemplos públicos.
 
-### Publicação no GitHub
-
-- Garanta que `.env` está no `.gitignore` (já configurado). Não publique segredos.
-- Use `.env.example` com valores fictícios e sem usuário/senha.
-- Prefira segredos gerenciados pelo ambiente de deploy (Docker, plataforma cloud) ao invés de arquivos.
-
 ## Navegação (Frontend)
 
 - `#agents` — cadastro e busca de agentes (lista com tabela em desktop e cartões no mobile).
@@ -185,21 +179,21 @@ Em telas pequenas, a tabela é ocultada e os itens aparecem como cartões com os
 
 ### Fluxo de Autenticação
 
-1) Usuário envia `POST /api/auth/login` com `{ email, password }`.
-2) Servidor valida credenciais no MongoDB e, em caso de sucesso, grava o cookie `gs_auth` (2h).
-3) O frontend consulta `GET /api/auth/me` para obter `{ id, email, role }` e montar a interface.
-4) `POST /api/auth/logout` limpa o cookie; `POST /api/auth/change-password` troca a senha.
+1. Usuário envia `POST /api/auth/login` com `{ email, password }`.
+2. Servidor valida credenciais no MongoDB e, em caso de sucesso, grava o cookie `gs_auth` (2h).
+3. O frontend consulta `GET /api/auth/me` para obter `{ id, email, role }` e montar a interface.
+4. `POST /api/auth/logout` limpa o cookie; `POST /api/auth/change-password` troca a senha.
 
 ## Resumo Visual de Rotas
 
-| Grupo | Principais Endpoints |
-|------|-----------------------|
-| 🔐 Auth | `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`, `POST /auth/change-password`, `POST /auth/request` |
-| 👥 Usuários | `GET /users`, `POST /users`, `POST /users/:id/reset-password`, `PUT /users/:id`, `DELETE /users/:id` |
-| 🧑‍✈️ Agentes | `GET /agents`, `POST /agents`, `PUT /agents/:id`, `DELETE /agents/:id` |
-| 🕒 Turnos | `GET /shifts`, `POST /shifts`, `PUT /shifts/:id`, `DELETE /shifts/:id` |
-| 📅 Escalas | `POST /schedules/generate`, `POST /schedules/pdf` |
-| 🛠️ Debug & 📊 Relatórios | `GET /debug/shifts`, `POST/GET /debug/cleanup-orphan-shifts`, `GET /reports` |
+| Grupo                    | Principais Endpoints                                                                                        |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| 🔐 Auth                  | `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`, `POST /auth/change-password`, `POST /auth/request` |
+| 👥 Usuários              | `GET /users`, `POST /users`, `POST /users/:id/reset-password`, `PUT /users/:id`, `DELETE /users/:id`        |
+| 🧑‍✈️ Agentes               | `GET /agents`, `POST /agents`, `PUT /agents/:id`, `DELETE /agents/:id`                                      |
+| 🕒 Turnos                | `GET /shifts`, `POST /shifts`, `PUT /shifts/:id`, `DELETE /shifts/:id`                                      |
+| 📅 Escalas               | `POST /schedules/generate`, `POST /schedules/pdf`                                                           |
+| 🛠️ Debug & 📊 Relatórios | `GET /debug/shifts`, `POST/GET /debug/cleanup-orphan-shifts`, `GET /reports`                                |
 
 ## Rotas da API
 
@@ -208,16 +202,20 @@ Todas as rotas abaixo (exceto as de autenticação e `POST /api/auth/request`) e
 ### Auth
 
 - POST `/api/auth/login`
+
   - Body: `{ email, password }`
   - Retorna: `{ ok: true, user }` e grava cookie `gs_auth` (2h).
 
 - POST `/api/auth/logout`
+
   - Limpa cookie e retorna `{ ok: true }`.
 
 - GET `/api/auth/me`
+
   - Retorna `{ id, email, role }` do usuário logado.
 
 - POST `/api/auth/change-password`
+
   - Body: `{ currentPassword, newPassword }`
   - Política de senha: mínimo 8, maiúscula, minúscula, número e símbolo.
   - Retorna `{ ok: true }`.
@@ -229,17 +227,21 @@ Todas as rotas abaixo (exceto as de autenticação e `POST /api/auth/request`) e
 ### Usuários (apenas admin)
 
 - GET `/api/users`
+
   - Lista `{ email, role, active, createdAt }`.
 
 - POST `/api/users`
+
   - Body: `{ email, password, role='user' }`
   - Retorna `{ id, email, role, active }`.
 
 - POST `/api/users/:id/reset-password`
+
   - Body: `{ newPassword }` (segue política de senha forte).
   - Retorna `{ ok: true }`.
 
 - PUT `/api/users/:id`
+
   - Body: `{ role?, active?, email? }` (verifica conflito de e-mail).
   - Retorna `{ id, email, role, active }`.
 
@@ -250,14 +252,17 @@ Todas as rotas abaixo (exceto as de autenticação e `POST /api/auth/request`) e
 ### Agentes
 
 - GET `/api/agents?q=...`
+
   - Filtro por `name`, `cpf` ou `phone` (regex case-insensitive). Ordena por nome.
 
 - POST `/api/agents`
+
   - Body obrigatório: `{ name, phone, cpf, pix }`
   - Opcionais: `{ hourlyRate, status='disponível', avatarUrl }`
   - Valida CPF/telefone. Retorna agente criado (associado ao `tenantId`).
 
 - PUT `/api/agents/:id`
+
   - Atualiza campos com validação opcional de CPF/telefone. Retorna agente atualizado.
 
 - DELETE `/api/agents/:id`
@@ -267,14 +272,17 @@ Todas as rotas abaixo (exceto as de autenticação e `POST /api/auth/request`) e
 ### Turnos (Shifts)
 
 - GET `/api/shifts?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&agentId=`
+
   - Lista turnos no período e/ou por agente. Ordena por `date` e `start`.
 
 - POST `/api/shifts`
+
   - Body obrigatório: `{ agentId, date, start, end }`
   - Opcionais: `{ location, notes }`
   - Idempotente (upsert por `agentId+date+start`). Retorna `201` com documento criado ou `{ ok: true, existed: true, shift }`.
 
 - PUT `/api/shifts/:id`
+
   - Recalcula duração/virada (`isOvernight`, `is24h`, `endDate`) ao atualizar `start`, `end`, `notes`. Retorna documento atualizado.
 
 - DELETE `/api/shifts/:id`
@@ -283,6 +291,7 @@ Todas as rotas abaixo (exceto as de autenticação e `POST /api/auth/request`) e
 ### Escalas (Geração)
 
 - POST `/api/schedules/generate`
+
   - Body: `{ period, startDate, endDate, shiftLengths=[8], startTimes=['08:00'], selectedAgentIds=[], notes }`
   - Persiste via `bulkWrite` com upsert e retorna `{ schedule, persistedCount }`.
 
@@ -293,9 +302,11 @@ Todas as rotas abaixo (exceto as de autenticação e `POST /api/auth/request`) e
 ### Debug e Relatórios
 
 - GET `/api/debug/shifts`
+
   - Lista turnos com `agentName` enriquecido.
 
 - POST/GET `/api/debug/cleanup-orphan-shifts`
+
   - Remove turnos órfãos cujos `agentId` não existem mais. Retorna `{ removed }`.
 
 - GET `/api/reports?period=monthly&startDate=YYYY-MM-DD&endDate=YYYY-MM-DD`
@@ -413,16 +424,16 @@ curl -b cookies.txt -H "Content-Type: application/json" \
 
 ### Variáveis de Ambiente (tabela rápida)
 
-| Nome | Descrição | Exemplo |
-|------|-----------|---------|
-| `MONGO_URI` | Conexão com MongoDB | `mongodb://127.0.0.1:27017/guardscale` |
-| `JWT_SECRET` | Segredo do JWT (cookies) | `troque_este_segredo_em_producao` |
-| `ADMIN_EMAIL` | E-mail seed do admin | `admin@local` |
-| `ADMIN_PASSWORD` | Senha seed do admin | `admin123` |
-| `CORS_ORIGIN` | Origens permitidas (vírgula) | `http://localhost:3000` |
-| `SUPPORT_EMAIL_TO` | Destinatário suporte | `suporte@dominio.com` |
-| `SUPPORT_EMAIL_FROM` | Remetente suporte | `GuardScale <no-reply@dominio.com>` |
-| `SMTP_*` | Config SMTP | `HOST/PORT/SECURE/USER/PASS` |
+| Nome                 | Descrição                    | Exemplo                                |
+| -------------------- | ---------------------------- | -------------------------------------- |
+| `MONGO_URI`          | Conexão com MongoDB          | `mongodb://127.0.0.1:27017/guardscale` |
+| `JWT_SECRET`         | Segredo do JWT (cookies)     | `troque_este_segredo_em_producao`      |
+| `ADMIN_EMAIL`        | E-mail seed do admin         | `admin@local`                          |
+| `ADMIN_PASSWORD`     | Senha seed do admin          | `admin123`                             |
+| `CORS_ORIGIN`        | Origens permitidas (vírgula) | `http://localhost:3000`                |
+| `SUPPORT_EMAIL_TO`   | Destinatário suporte         | `suporte@dominio.com`                  |
+| `SUPPORT_EMAIL_FROM` | Remetente suporte            | `GuardScale <no-reply@dominio.com>`    |
+| `SMTP_*`             | Config SMTP                  | `HOST/PORT/SECURE/USER/PASS`           |
 
 ### Scripts disponíveis
 
