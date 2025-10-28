@@ -434,23 +434,31 @@ app.post('/api/auth/request', requestLimiter, async (req, res) => {
     } catch (e) {
       console.warn('[support] Falha ao registrar log (DB indisponível?)');
     }
-    // Envio assíncrono para reduzir latência da resposta
-    sendSupportEmail({ type, email: String(email).toLowerCase(), payload, ua, ip, user: userDoc })
-      .then((send) => {
-        if (!send.ok) {
-          if (send.reason === 'smtp_not_configured') {
-            console.warn('[support] SMTP não configurado; solicitação registrada sem envio');
-          } else {
-            console.error('[support] Falha ao enviar e-mail de suporte', send);
-          }
+    // Em ambiente serverless, tarefas pós-resposta podem ser interrompidas.
+    // Por isso, aguardamos o envio e retornamos flags claras para a UI.
+    try {
+      const send = await sendSupportEmail({
+        type,
+        email: String(email).toLowerCase(),
+        payload,
+        ua,
+        ip,
+        user: userDoc
+      });
+      if (!send.ok) {
+        if (send.reason === 'smtp_not_configured') {
+          console.warn('[support] SMTP não configurado; solicitação registrada sem envio');
         } else {
-          console.log('[support] E-mail enviado:', send.messageId);
+          console.error('[support] Falha ao enviar e-mail de suporte', send);
         }
-      })
-      .catch((e) => console.error('[support] Erro ao enviar e-mail (async)', e));
-
-    // Responde imediatamente informando que será processado
-    res.json({ ok: true, queued: true });
+        return res.json({ ok: true, queued: false, emailSent: false, detail: send.reason });
+      }
+      console.log('[support] E-mail enviado:', send.messageId);
+      return res.json({ ok: true, queued: true, emailSent: true });
+    } catch (e) {
+      console.error('[support] Erro ao enviar e-mail', e);
+      return res.json({ ok: true, queued: false, emailSent: false, detail: 'smtp_send_failed' });
+    }
   } catch (_e) {
     res.status(500).json({ error: 'Falha ao registrar solicitação' });
   }
